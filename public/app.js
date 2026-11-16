@@ -32,6 +32,9 @@ async function boot() {
   state.items = data.items;
   for (const r of state.recipes) state.byId.set(r.id, r);
 
+  // The packaged app is the only one with no other way to stop it.
+  $('#quitApp').hidden = !meta.packaged;
+
   buildWorlds(meta);
   buildJobs(meta);
   buildRarity();
@@ -519,6 +522,19 @@ async function reloadRecipes() {
   applyFilter();
   if (state.selected) select(state.selected.id);
 }
+$('#quitApp').addEventListener('click', async () => {
+  $('#quitApp').disabled = true;
+  try { await fetch('/api/quit', { method: 'POST' }); } catch { /* it stops mid-reply */ }
+  const panel = document.createElement('div');
+  panel.className = 'stopped';
+  panel.innerHTML = `<div>
+    <h2>Crafting Materials Checker has stopped</h2>
+    <p>You can close this tab.</p>
+    <p class="hint">Start it again from the shortcut whenever you need it.</p>
+  </div>`;
+  document.body.appendChild(panel);
+});
+
 $('#dataCheck').addEventListener('click', async () => {
   const btn = $('#dataCheck');
   const out = $('#dataText');

@@ -21,6 +21,8 @@ export const config = {
   itemLang: (process.env.ITEM_LANG || 'en').toLowerCase(),
   defaultWorld: process.env.DEFAULT_WORLD || 'Coeurl',
   port: int(process.env.PORT, 8790),
+  // Packaged only: minutes of nobody using it before it shuts itself down. 0 keeps it running.
+  idleExitMinutes: int(process.env.IDLE_EXIT_MINUTES, 20),
   host: process.env.HOST || '127.0.0.1',
   universalisBase: 'https://universalis.app/api/v2',
   iconHost: 'https://v2.xivapi.com',

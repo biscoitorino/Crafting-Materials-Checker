@@ -5,6 +5,7 @@ import { config } from './config.js';
 import { loadIndex, buildIndex, fetchDataVersion } from './data.js';
 import { getIcon } from './icons.js';
 import { registerStatic } from './static.js';
+import { desktopMode, startIdleExit } from './desktop.js';
 import { worldsAndDcs } from './universalis.js';
 import { priceRecipe } from './recipe-price.js';
 import { loadInventory, inventoryPath } from './inventory.js';
@@ -23,8 +24,14 @@ export async function startServer() {
 
   await app.register(fastifyCompress, { threshold: 4096 });
 
+  // The packaged app has no window of its own, so it watches for being used
+  // and bows out when it is not.
+  let lastUsed = Date.now();
+  app.addHook('onRequest', async () => { lastUsed = Date.now(); });
+  startIdleExit(() => lastUsed);
+
   app.get('/api/meta', async () => ({
-    builtAt: index.builtAt, lang: index.lang, jobs: index.jobs, books: index.books,
+    builtAt: index.builtAt, lang: index.lang, jobs: index.jobs, books: index.books, packaged: desktopMode,
     defaultWorld: config.defaultWorld, recipes: index.recipes.length,
     worlds: await worldsAndDcs().catch(() => []),
   }));
@@ -157,6 +164,14 @@ export async function startServer() {
     } catch {
       return reply.send(TRANSPARENT_PNG);
     }
+  });
+
+  // Stopping the app from the page it is serving. Only reachable from this
+  // machine, since the server listens on the loopback address.
+  app.post('/api/quit', async (req, reply) => {
+    reply.send({ stopping: true });
+    console.log('[web] stop requested from the browser');
+    setTimeout(() => process.exit(0), 250);
   });
 
   // The UI itself. Registered last so it only sees what the API did not claim.

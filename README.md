@@ -87,8 +87,12 @@ board snapshot is, because a cheap listing from six hours ago is probably alread
 [releases page](https://github.com/biscoitorino/Crafting-Materials-Checker/releases).
 
 1. Unzip it somewhere it is allowed to write — your Documents folder rather than Program Files.
-2. Run `CraftingMaterialsChecker.exe`.
-3. Open <http://127.0.0.1:8790>.
+2. Run `CraftingMaterialsChecker.exe`. Your browser opens at the app by itself.
+
+There is no window and no tray icon: the browser page is the whole app. **stop app** in the
+top right shuts it down, and it also stops on its own after twenty minutes with nobody using
+it, so closing the browser and walking away is fine. Double-clicking while it is already
+running reopens the page instead of starting a second copy.
 
 The first run downloads the game data (~30 MB) into a `data` folder beside the executable and
 builds its index, which takes a minute. Item icons are cached there as you browse. Nothing else
@@ -127,8 +131,9 @@ npm run build
 
 Bundles the app, embeds the UI and lookup tables as assets, and injects the result into a copy
 of the Node runtime as a [single-executable application](https://nodejs.org/api/single-executable-applications.html).
-Output lands in `dist/`: the `.exe` and a zip ready to attach to a release. Windows only, since
-it packages a Windows runtime.
+It also gives the executable its icon and switches it to a windowed program, which is what
+keeps a console from appearing. Output lands in `dist/`: the `.exe` and a zip ready to attach
+to a release. Windows only, since it packages a Windows runtime.
 
 ### Windows desktop shortcut and tray icon
 
@@ -187,6 +192,7 @@ src/
   icons.js         on-disk icon cache
   static.js        serves the UI, from disk or from inside the packaged exe
   bundle.js        tells the two apart and finds the shipped files
+  desktop.js       packaged-only: log to file, open the browser, idle shutdown
 public/            the UI — plain HTML, CSS and JavaScript, no framework
 scripts/           Windows tray launcher, shortcut installer, release build
 ```

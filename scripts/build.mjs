@@ -28,6 +28,35 @@ const say = (msg) => console.log(`[build] ${msg}`);
 const run = (cmd, args) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8', timeout: 300_000 });
 const mb = (file) => `${(fs.statSync(file).size / 1024 / 1024).toFixed(1)} MB`;
 
+/**
+ * Flips the PE subsystem from console (3) to Windows GUI (2), which is what
+ * stops a command window appearing. It is a single field in the optional
+ * header; everything else about the file is left alone.
+ */
+function toWindowsSubsystem(file) {
+  const fd = fs.openSync(file, 'r+');
+  try {
+    const dos = Buffer.alloc(0x40);
+    fs.readSync(fd, dos, 0, dos.length, 0);
+    if (dos.toString('ascii', 0, 2) !== 'MZ') throw new Error('not a PE file');
+    const peOffset = dos.readUInt32LE(0x3c);
+    const sig = Buffer.alloc(4);
+    fs.readSync(fd, sig, 0, 4, peOffset);
+    if (sig.toString('ascii', 0, 4) !== 'PE' + String.fromCharCode(0, 0)) throw new Error('PE signature not found');
+    // COFF header is 20 bytes, then the optional header; its Subsystem field
+    // sits 68 bytes in for both PE32 and PE32+.
+    const subsystemAt = peOffset + 4 + 20 + 68;
+    const current = Buffer.alloc(2);
+    fs.readSync(fd, current, 0, 2, subsystemAt);
+    if (current.readUInt16LE(0) === 2) return;
+    if (current.readUInt16LE(0) !== 3) throw new Error(`unexpected subsystem ${current.readUInt16LE(0)}`);
+    fs.writeSync(fd, Buffer.from([2, 0]), 0, 2, subsystemAt);
+    say('switched to a windowed (no console) executable');
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 if (process.platform !== 'win32') {
   console.error('[build] This build targets Windows and must run on Windows.');
   process.exit(1);
@@ -69,6 +98,7 @@ for (const file of fs.readdirSync(path.join(root, 'public', 'assets'))) {
 for (const file of ['gc-seals.json', 'master-books.json']) {
   assets[`assets/${file}`] = `assets/${file}`;
 }
+
 const seaConfig = path.join(work, 'sea-config.json');
 fs.writeFileSync(seaConfig, JSON.stringify({
   main: path.join(work, 'app.cjs'),
@@ -119,16 +149,25 @@ run(process.execPath, [
   exe, 'NODE_SEA_BLOB', path.join(work, 'sea.blob'),
   '--sentinel-fuse', 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
 ]);
+// 6. Make it a windowed program. A console binary opens a black window on
+// every double-click; this app lives in a browser page instead.
+toWindowsSubsystem(exe);
 say(`${EXE} ${mb(exe)}`);
 
-// 6. A zip anyone can download, unpack and run.
+// 7. A zip anyone can download, unpack and run.
 const readme = path.join(work, 'README.txt');
 fs.writeFileSync(readme, [
   'Crafting Materials Checker',
   '==========================',
   '',
-  'Double-click CraftingMaterialsChecker.exe, then open http://127.0.0.1:8790',
-  'in your browser. Nothing to install: Node is already inside the executable.',
+  'Double-click CraftingMaterialsChecker.exe. Your browser opens at the app by',
+  'itself. Nothing to install: Node is already inside the executable.',
+  '',
+  'There is no window and no tray icon: the browser page is the whole app. To',
+  'stop it, use "stop app" in the top right of the page. It also shuts itself',
+  'down after twenty minutes with nobody using it, so closing the browser and',
+  'walking away is fine. Double-clicking again while it runs just reopens the',
+  'page rather than starting a second copy.',
   '',
   'On the first run it downloads the game data (about 30 MB) and writes it to a',
   '"data" folder next to the executable, along with item icons as it needs them.',

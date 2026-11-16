@@ -40,6 +40,13 @@ select { max-width: 200px; }
 .tiny { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 2px 8px; font: inherit; font-size: 11px; cursor: pointer; margin-left: 6px; }
 .tiny:hover { color: var(--text); }
 .tiny:disabled { opacity: .6; cursor: wait; }
+.tiny.danger:hover { color: var(--red); border-color: var(--red); }
+.stopped {
+  position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 8, 5, .92); color: var(--muted); text-align: center; padding: 24px;
+}
+.stopped h2 { color: var(--gold); margin: 0 0 8px; font-size: 20px; }
+.stopped p { margin: 4px 0; font-size: 14px; }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 8px currentColor; }
 .dot.ok { background: var(--green); } .dot.err { background: var(--red); }
 
