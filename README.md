@@ -9,9 +9,11 @@
 A local web app for FFXIV crafters. Every recipe in the game, priced against the live market
 board through [Universalis](https://universalis.app) — with the market's own rules baked in.
 
+[![Download for Windows](https://img.shields.io/badge/download-Windows%20x64-f6c344.svg?style=for-the-badge&logo=windows)](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest/download/CraftingMaterialsChecker-v1.0.0-win-x64.zip)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-f6c344.svg?style=flat-square)](LICENSE)
-[![Node](https://img.shields.io/badge/Node-22%2B-7ec96b.svg?style=flat-square)](https://nodejs.org)
-![No build step](https://img.shields.io/badge/build%20step-none-6fb3e0.svg?style=flat-square)
+[![Release](https://img.shields.io/badge/release-v1.0.0-7ec96b.svg?style=flat-square)](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest)
+![No install needed](https://img.shields.io/badge/install-not%20needed-6fb3e0.svg?style=flat-square)
 ![Runs locally](https://img.shields.io/badge/runs-locally-b59cf0.svg?style=flat-square)
 
 <img src="docs/media/recipe.gif" alt="Searching a recipe and pricing its materials" width="100%">
@@ -80,13 +82,22 @@ board snapshot is, because a cheap listing from six hours ago is probably alread
 
 ## Download
 
-**[Download for Windows](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest)** —
-one `.exe`, no install, no Node needed. Unzip it somewhere it can write (your Documents
-folder, not Program Files), double-click, and open <http://127.0.0.1:8790>.
+**[CraftingMaterialsChecker-v1.0.0-win-x64.zip](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest/download/CraftingMaterialsChecker-v1.0.0-win-x64.zip)** (33 MB)
+— one `.exe`, no install, no Node needed. Every release is on the
+[releases page](https://github.com/biscoitorino/Crafting-Materials-Checker/releases).
 
-It writes a `data` folder next to itself for the game data and item icons, and nothing else.
+1. Unzip it somewhere it is allowed to write — your Documents folder rather than Program Files.
+2. Run `CraftingMaterialsChecker.exe`.
+3. Open <http://127.0.0.1:8790>.
+
+The first run downloads the game data (~30 MB) into a `data` folder beside the executable and
+builds its index, which takes a minute. Item icons are cached there as you browse. Nothing else
+is written anywhere.
+
 Windows SmartScreen will warn about an unsigned program the first time: **More info → Run
-anyway**.
+anyway**. Signing an executable costs money a hobby project does not have — if you would rather
+not trust a binary, [run it from source](#run-from-source) or
+[build it yourself](#building-the-windows-executable); it is the same code.
 
 ## Run from source
 
