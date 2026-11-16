@@ -9,7 +9,7 @@
 A local web app for FFXIV crafters. Every recipe in the game, priced against the live market
 board through [Universalis](https://universalis.app) — with the market's own rules baked in.
 
-[![Download for Windows](https://img.shields.io/badge/download-Windows%20x64-f6c344.svg?style=for-the-badge&logo=windows)](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest/download/CraftingMaterialsChecker-v1.0.0-win-x64.zip)
+[![Download for Windows](https://img.shields.io/badge/download-Windows%20x64-f6c344.svg?style=for-the-badge&logo=windows)](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-f6c344.svg?style=flat-square)](LICENSE)
 [![Release](https://img.shields.io/badge/release-v1.0.0-7ec96b.svg?style=flat-square)](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest)
@@ -82,9 +82,8 @@ board snapshot is, because a cheap listing from six hours ago is probably alread
 
 ## Download
 
-**[CraftingMaterialsChecker-v1.0.0-win-x64.zip](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest/download/CraftingMaterialsChecker-v1.0.0-win-x64.zip)** (33 MB)
-— one `.exe`, no install, no Node needed. Every release is on the
-[releases page](https://github.com/biscoitorino/Crafting-Materials-Checker/releases).
+Grab the zip from the **[latest release](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest)**
+(33 MB) — one `.exe`, no install, no Node needed.
 
 1. Unzip it somewhere it is allowed to write — your Documents folder rather than Program Files.
 2. Run `CraftingMaterialsChecker.exe`. Your browser opens at the app by itself.
@@ -121,8 +120,8 @@ the top right of the page.
 On first run it downloads the game data (~30 MB) and condenses it into `data/index.json` —
 recipes, items, icons, vendors, master books and seal values. That takes a minute once.
 
-`.env` holds the port, the item language (`en`, `de`, `fr`, `ja`) and the world shown on first
-load. Everything else is remembered in the browser.
+`.env` holds the port, the item language (`en`, `de`, `fr`, `ja`) and the world to start on.
+Whatever you pick in the header is remembered in the browser anyway, so setting it is optional.
 
 ### Building the Windows executable
 
