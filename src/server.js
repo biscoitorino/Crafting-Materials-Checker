@@ -166,8 +166,8 @@ export async function startServer() {
     }
   });
 
-  // Stopping the app from the page it is serving. Only reachable from this
-  // machine, since the server listens on the loopback address.
+  // Stopping the app from the page it is serving, however it was started.
+  // Only reachable from this machine, since the server listens on loopback.
   app.post('/api/quit', async (req, reply) => {
     reply.send({ stopping: true });
     console.log('[web] stop requested from the browser');

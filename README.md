@@ -115,7 +115,8 @@ cp .env.example .env
 npm start
 ```
 
-Then open **http://127.0.0.1:8790**.
+Then open **http://127.0.0.1:8790**. Ctrl+C in the terminal stops it, or use **stop app** in
+the top right of the page.
 
 On first run it downloads the game data (~30 MB) and condenses it into `data/index.json` —
 recipes, items, icons, vendors, master books and seal values. That takes a minute once.
@@ -134,16 +135,6 @@ of the Node runtime as a [single-executable application](https://nodejs.org/api/
 It also gives the executable its icon and switches it to a windowed program, which is what
 keeps a console from appearing. Output lands in `dist/`: the `.exe` and a zip ready to attach
 to a release. Windows only, since it packages a Windows runtime.
-
-### Windows desktop shortcut and tray icon
-
-```bash
-npm run shortcuts
-```
-
-Puts a shortcut on your desktop. It starts the server with no console window and adds a tray
-icon — full colour while running, grey when stopped. Double-click to open the app;
-right-click for **Open in browser / Stop / Restart / Show logs / Quit**.
 
 ### Import your inventory (optional)
 
@@ -194,7 +185,7 @@ src/
   bundle.js        tells the two apart and finds the shipped files
   desktop.js       packaged-only: log to file, open the browser, idle shutdown
 public/            the UI — plain HTML, CSS and JavaScript, no framework
-scripts/           Windows tray launcher, shortcut installer, release build
+scripts/           release build and the icon generator
 ```
 
 ## Contributing

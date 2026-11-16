@@ -32,9 +32,6 @@ async function boot() {
   state.items = data.items;
   for (const r of state.recipes) state.byId.set(r.id, r);
 
-  // The packaged app is the only one with no other way to stop it.
-  $('#quitApp').hidden = !meta.packaged;
-
   buildWorlds(meta);
   buildJobs(meta);
   buildRarity();

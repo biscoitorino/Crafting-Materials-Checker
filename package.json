@@ -10,10 +10,7 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env src/index.js",
     "data": "node --env-file-if-exists=.env src/index.js --rebuild",
-    "shortcuts": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-shortcuts.ps1",
     "icon": "node scripts/make-icon.mjs",
-    "tray": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tray.ps1",
-    "stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop.ps1",
     "build": "node scripts/build.mjs"
   },
   "dependencies": {
