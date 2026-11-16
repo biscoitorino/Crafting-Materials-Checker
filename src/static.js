@@ -1,4 +1,4 @@
-import { readShippedBytes } from './bundle.js';
+import { packaged, readShippedBytes } from './bundle.js';
 
 /**
  * The web UI, served straight from the shipped files. There are only a handful
@@ -17,11 +17,15 @@ const TYPES = {
   '.ico': 'image/x-icon',
 };
 
-/** The UI is small and never changes at runtime, so it is read once. */
+/**
+ * Inside the packaged executable the UI cannot change, so it is read once.
+ * Running from source it is read every time, so editing a file and reloading
+ * the page is enough to see the change.
+ */
 const cache = new Map();
 
 function load(urlPath) {
-  if (cache.has(urlPath)) return cache.get(urlPath);
+  if (packaged && cache.has(urlPath)) return cache.get(urlPath);
   // Only ever look inside public/, whatever the request says.
   const clean = urlPath.split('?')[0].replace(/\\/g, '/').replace(/\/+/g, '/');
   if (clean.includes('..')) return null;
@@ -29,7 +33,7 @@ function load(urlPath) {
   const body = readShippedBytes(rel);
   const ext = rel.slice(rel.lastIndexOf('.'));
   const entry = body ? { body, type: TYPES[ext] || 'application/octet-stream' } : null;
-  cache.set(urlPath, entry);
+  if (packaged) cache.set(urlPath, entry);
   return entry;
 }
 

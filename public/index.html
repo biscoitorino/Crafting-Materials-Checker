@@ -13,14 +13,14 @@
     <button data-view="recipes" class="on">Recipes</button><button data-view="finder">Profit finder</button><button data-view="flip">Flipping</button>
   </div>
   <div class="controls">
-    <label>Market
-      <select id="world"></select>
+    <label title="World or data centre to price against"><span class="lbl">Market</span>
+      <select id="world" aria-label="Market"></select>
     </label>
-    <label title="How many finished items you want. Converted to crafts using the recipe's yield.">Make
-      <input id="units" type="number" min="1" max="9999" value="1">
+    <label title="How many finished items you want. Converted to crafts using the recipe's yield."><span class="lbl">Make</span>
+      <input id="units" type="number" min="1" max="9999" value="1" aria-label="Units to make">
       <span class="unit">units</span>
     </label>
-    <label class="chk" title="Leave shards, crystals and clusters out of the total"><input id="noCrystals" type="checkbox"> ignore crystals</label>
+    <label class="chk" title="Leave shards, crystals and clusters out of the total"><input id="noCrystals" type="checkbox"> no crystals</label>
     <div class="seg" id="quality">
       <button data-q="any" class="on">Any</button><button data-q="nq">NQ</button><button data-q="hq">HQ</button>
     </div>

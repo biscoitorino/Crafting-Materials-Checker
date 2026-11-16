@@ -18,6 +18,8 @@ const read = (k) => { try { return localStorage.getItem(k); } catch { return nul
 function setStatus(kind, text) {
   $('#status .dot').className = `dot ${kind}`;
   $('#statusText').textContent = text;
+  // Narrow windows hide the text, so the dot carries it as a tooltip.
+  $('#status').title = text;
 }
 
 /* ---------- boot ---------- */
