@@ -1,141 +1,171 @@
+<div align="center">
+
+<img src="public/assets/crafting.png" alt="Crafting Materials Checker" width="120">
+
 # Crafting Materials Checker
 
-A local web UI for FFXIV crafters. Browse every recipe by class, see the recipe sheet
-(durability, difficulty, max quality, yield, craftsmanship recommendation, ingredients), and
-price the materials on the market board through [Universalis](https://universalis.app).
+**Know what a craft really costs, and what it is really worth.**
 
-## What makes the pricing different
+A local web app for FFXIV crafters. Every recipe in the game, priced against the live market
+board through [Universalis](https://universalis.app) — with the market's own rules baked in.
 
-The market board sells listings whole. You cannot take 10 Iron Ingots out of someone's stack
-of 99. So "cheapest per unit" is the wrong question: if you need 10, a stack of 10 at 400 each
-(4,000) beats a stack of 99 at 200 each (19,800).
+[![License: MIT](https://img.shields.io/badge/License-MIT-f6c344.svg?style=flat-square)](LICENSE)
+[![Node](https://img.shields.io/badge/Node-22%2B-7ec96b.svg?style=flat-square)](https://nodejs.org)
+![No build step](https://img.shields.io/badge/build%20step-none-6fb3e0.svg?style=flat-square)
+![Runs locally](https://img.shields.io/badge/runs-locally-b59cf0.svg?style=flat-square)
 
-For every material the app solves that exactly: it picks the set of listings whose quantities
-cover what you need at the lowest total cost, and shows you which stacks to buy, how many spare
-units you end up with, and how much it saved against buying cheapest-per-unit stacks blindly.
+<img src="docs/media/recipe.gif" alt="Searching a recipe and pricing its materials" width="100%">
 
-If an NPC sells the material for gil, the app knows: the ingredient carries an **NPC** badge, and
-when the vendor works out cheaper than the board's whole-stack plan (it usually does for base
-materials like Rubber or Twinthread) the total assumes you buy from the vendor, and the row shows
-the vendor's name, zone and map coordinates. When the board is cheaper, the vendor price is still
-shown next to the stacks for comparison.
+</div>
 
-Equipment recipes also show the **Grand Company expert delivery** seal value (by item level,
-from the game's `GCSupplyDutyReward` table via XIVAPI) and a **gil per seal** figure, so seal
-farming crafts can be compared directly.
+## Why not just use the cheapest price?
 
-Also shown per material: the cheapest unit price on the board, the item's stack size, how old
-the Universalis data is (amber when stale), and a link to the material's own recipe when it is
-craftable. The result item's current board price gives a rough margin.
+**Because the board sells listings whole.** You cannot take 10 Iron Ingots out of someone's
+stack of 99. So "cheapest per unit" is the wrong question: if you need 10, a stack of 10 at
+400 each (4,000 gil) beats a stack of 99 at 200 each (19,800 gil).
 
-## Profit finder
+For every material this app solves that exactly — it picks the **set of listings** whose
+quantities cover what you need for the lowest total, and shows you which stacks to buy, how
+many spare units you end up with, and what it saved against buying cheapest-first.
 
-The **Profit finder** tab ranks everything you can make by what it earns. Enter your level in
-each crafting class and tick the master books you own (both are remembered), set a minimum
-number of units the item must have sold in the last week, choose NQ or HQ, and scan.
+It also knows the things that quietly ruin a profit estimate:
 
-For each recipe: the sale price (the weekly average, capped at the current cheapest listing,
-since that is what you would have to undercut), units sold per week, material cost per unit
-(cheapest listing or NPC price per material), profit after the 5% market tax, margin, and a
-weekly potential (profit × units the whole market sells per week). Click a row to open the
-recipe with the exact stack-by-stack cost.
-
-The scan is deliberately gentle on Universalis: it uses the aggregated endpoint (100 items per
-request), prices materials only for recipes that actually sell, runs three requests at a time
-with a pause between them, caches everything for ten minutes per market, and only ever runs one
-scan at once. A full scan of ~2,000 recipes is around 30 requests.
-
-## Flipping
-
-The **Flipping** tab takes a gil budget and finds listings that sit well under what the item
-really sells for. One aggregated pass over every item the app knows (100 items a request), then
-the best 60 candidates are checked against live listings and the week's sale history. For each
-item it buys the cheapest listings whole and relists at the week's median sale, but never above
-the cheapest listing it leaves behind, since that becomes the competition: if the board shows
-2,000 / 2,005 / 50,000 and the median is 40,000, both cheap ones are bought and relisted at
-40,000. Nothing plans more units than the market sold in the last week, anything under an 8%
-return is ignored, and the budget goes to the best return first (partial buys when it does not
-stretch). Board data age is shown per row: a cheap listing from hours ago may be gone already.
-
-## Your inventory
-
-Export your inventory from the [Allagan Tools](https://github.com/Critical-Impact/InventoryTools)
-Dalamud plugin (open a list, **Export to CSV**) and save it as `data/export.csv` (or point
-`INVENTORY_CSV` in `.env` at it). Tick **use my inventory** in the Profit finder and:
-
-- the recipe page deducts what you own from every material ("have 28 of 2 · already in your bags")
-  and only prices the shortfall;
-- **Craft to sell** costs only what you lack;
-- **Craft from what I own** lists recipes whose every material is already in your bags, how many
-  you can craft, what the materials would fetch sold raw, and what crafting adds on top;
-- **Sell what I own as-is** values every marketable stack at a realistic sale price and ranks it.
-
-Items already listed on the market, equipped, or in the armoury chest are not counted. The file
-is re-read whenever it changes, so just re-export and hit reload.
-
-## Controls
-
-- **Market** – any world, or a whole data centre (listings then show which world they are on).
-- **Crafts** – how many times you will craft; material quantities scale with it.
-- **Any / NQ / HQ** – which listings to consider for materials. HQ also switches the margin
-  estimate to the result's HQ price.
-- Left panel – search, class chips, level range, expert-only.
-- Ingredients in blue are craftable; click to jump to their recipe. `#r=<recipeId>` in the URL
-  is shareable.
-
-## Data sources
-
-| What | Source |
+| | |
 | --- | --- |
-| Recipes, item names, categories, stack sizes, rarity, gil vendors and NPC locations | [FFXIV Teamcraft data set](https://github.com/ffxiv-teamcraft/ffxiv-teamcraft/tree/staging/libs/data/src/lib/json) (kept current with each patch) |
-| Item icons, GC expert delivery seal table, master book requirements | [XIVAPI v2](https://v2.xivapi.com), downloaded once each into `data/icons` |
-| Listings, worlds, marketable items | [Universalis](https://universalis.app) |
+| 🏪 **NPC vendors** | 4,000+ materials are sold by NPCs for gil. When the vendor beats the board, the total uses it and tells you the vendor's name, zone and map coordinates. |
+| 📊 **What actually sold** | Prices come from the week's sale **median**, capped at the cheapest live listing, so one 3,000,000 gil bait sale cannot flatter a recipe. |
+| 🧾 **Sales, not units** | A stack of 33 is **one sale**, not 33. Bulk materials stop looking like fast movers. |
+| 🎒 **Your inventory** | Import what you own and only the shortfall gets priced. |
+| 💠 **Crystals** | One toggle to leave shards, crystals and clusters out of the maths. |
+| 🎖️ **GC seals** | Expert delivery seal value and gil-per-seal for every piece of gear. |
 
-On first start the app downloads the Teamcraft files (~30 MB) and condenses them into
-`data/index.json` (recipes for the eight crafting classes plus the items they use). The index
-remembers which Teamcraft commit it came from; **check data updates** in the header asks GitHub
-for the latest commit to the data folder (one small request) and only downloads and rebuilds
-when it differs, swapping the new data in without a restart. `npm run data` forces a rebuild.
+## Three ways to use it
 
-## Setup
+### 📖 Recipes
 
-Node.js 22 or newer.
+Search any of the game's **13,892 crafting recipes**. You get the in-game recipe sheet
+(durability, difficulty, max quality, yield, craftsmanship recommendation, master book), the
+full material list with icons, the exact stack-by-stack shopping plan, the week's sales
+history, and a margin estimate. Craftable materials link to their own recipe. Set **Make N
+units** and everything scales — stack maths included.
+
+### 💰 Profit finder
+
+<img src="docs/media/finder.gif" alt="The profit finder ranking craftable recipes by profit" width="100%">
+
+Tell it your level in each class and which master books you own, then scan. It ranks
+everything you can actually make by profit per unit, margin, total for a batch, or weekly
+potential. Three modes:
+
+- **Craft to sell** — buy what you lack, keep what you own.
+- **Craft from what I own** — only recipes your bags already cover, with what crafting adds
+  over just selling the materials raw.
+- **Sell what I own as-is** — every marketable stack you hold, valued and ranked.
+
+The top candidates are re-priced against **live listings and real sale history**, so anything
+whose materials cannot actually be bought right now is dropped rather than shown as profit.
+
+### 🔁 Flipping
+
+<img src="docs/media/flip.gif" alt="The flipping planner turning a gil budget into a shopping list" width="100%">
+
+Give it a gil budget. It finds listings sitting well under what the item really sells for and
+turns the budget into a shopping list: which listings to buy, what to relist at, expected
+profit and return.
+
+It understands that **buying the cheap listings makes the next one your competition** — with
+listings at 2,000 / 2,005 / 50,000 and a 40,000 median, it buys both cheap ones and relists at
+40,000. It never plans more units than the market moved last week, and it shows how stale each
+board snapshot is, because a cheap listing from six hours ago is probably already gone.
+
+## Quick start
+
+Needs [Node.js 22+](https://nodejs.org). No build step, no database, nothing to compile.
 
 ```bash
+git clone https://github.com/biscoitorino/Crafting-Materials-Checker.git
+cd Crafting-Materials-Checker
 npm install
 cp .env.example .env
 npm start
 ```
 
-Then open http://127.0.0.1:8790. `.env` holds the port, the item language (`en`, `de`, `fr`,
-`ja`) and the world shown on first load.
+Then open **http://127.0.0.1:8790**.
 
-## Layout
+On first run it downloads the game data (~30 MB) and condenses it into `data/index.json` —
+recipes, items, icons, vendors, master books and seal values. That takes a minute once.
 
-```
-src/
-  index.js       entry; --rebuild regenerates the data index
-  server.js      Fastify: /api/meta, /api/recipes, /api/price/:id, /api/scan, /icon/:id
-  scan.js        profit finder (aggregated Universalis stats, throttled and cached)
-  recipe-price.js exact per-recipe pricing shared by the page and the finder
-  inventory.js   Allagan Tools CSV import
-  data.js        builds and loads data/index.json from Teamcraft
-  pricing.js     stack-aware purchase planner (exact knapsack over listings)
-  universalis.js Universalis client
-  icons.js       on-disk icon cache
-public/          static UI (no build step)
-```
+`.env` holds the port, the item language (`en`, `de`, `fr`, `ja`) and the world shown on first
+load. Everything else is remembered in the browser.
 
-## Desktop shortcut and tray icon (Windows)
+### Windows desktop shortcut and tray icon
 
 ```bash
 npm run shortcuts
 ```
 
-puts a **Crafting Materials Checker** shortcut on the desktop. Launching it starts the server in
-the background (no console window) and adds a hammer icon to the notification area: full colour
-while the server is running, grey when it is stopped. Double-click the icon to open the app in
-your browser; right-click for **Open in browser / Stop / Restart / Show logs / Quit**.
+Puts a shortcut on your desktop. It starts the server with no console window and adds a tray
+icon — full colour while running, grey when stopped. Double-click to open the app;
+right-click for **Open in browser / Stop / Restart / Show logs / Quit**.
 
-`npm run stop` stops the server from a terminal. `npm run icon` rebuilds the `.ico` files from
-`public/assets/crafting.svg` if you change the artwork.
+### Import your inventory (optional)
+
+Export a list from the [Allagan Tools](https://github.com/Critical-Impact/InventoryTools)
+Dalamud plugin (**Export to CSV**) and save it as `data/export.csv`. Tick **use my inventory**
+and the app deducts what you already own from every material, everywhere. Items listed on the
+market, equipped or in the armoury chest are not counted. Re-export any time — the file is
+re-read when it changes.
+
+## Keeping game data current
+
+The index remembers which [Teamcraft](https://github.com/ffxiv-teamcraft/ffxiv-teamcraft)
+commit it was built from. **check updates** in the header asks GitHub for the latest commit to
+their data folder — one small request — and only downloads and rebuilds if it differs, hot
+swapping the new data in without a restart. `npm run data` forces a rebuild.
+
+## Where the data comes from
+
+| What | Source |
+| --- | --- |
+| Recipes, items, categories, stack sizes, rarity, NPC vendors and their locations | [FFXIV Teamcraft](https://github.com/ffxiv-teamcraft/ffxiv-teamcraft/tree/staging/libs/data/src/lib/json) |
+| Item icons, GC expert delivery seals, master book requirements | [XIVAPI](https://v2.xivapi.com) |
+| Listings, sale history, worlds | [Universalis](https://universalis.app) |
+
+### Being a good citizen
+
+Universalis is a volunteer-run community service, so the app is deliberately gentle with it:
+the market-wide scans use the aggregated endpoint (100 items per request), materials are only
+priced for recipes that actually sell, at most three requests are in flight at once with a
+pause between them, results are cached for ten minutes per market, and only one scan can run
+at a time. A full scan of ~2,000 recipes is roughly 30 requests.
+
+## How it is put together
+
+```
+src/
+  index.js         entry point; --rebuild regenerates the data index
+  server.js        Fastify routes and the static UI
+  data.js          builds data/index.json from Teamcraft + XIVAPI
+  pricing.js       stack-aware purchase planner (exact knapsack over listings)
+  recipe-price.js  per-recipe costing shared by the UI and the scanners
+  scan.js          profit finder
+  flip.js          flipping planner
+  inventory.js     Allagan Tools CSV import
+  universalis.js   Universalis client
+  icons.js         on-disk icon cache
+public/            the UI — plain HTML, CSS and JavaScript, no framework
+scripts/           Windows tray launcher and shortcut installer
+```
+
+## Contributing
+
+Issues and pull requests are welcome. The app is plain modern JavaScript with no build
+tooling, so a clone and `npm install` is the whole setup.
+
+## License
+
+[MIT](LICENSE).
+
+Not affiliated with or endorsed by Square Enix. FINAL FANTASY XIV © SQUARE ENIX CO., LTD.
+Item names, icons and game data are the property of Square Enix. Prices and sale history come
+from Universalis; nothing here reads or modifies the game.
