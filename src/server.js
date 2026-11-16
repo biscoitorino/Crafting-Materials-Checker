@@ -1,10 +1,10 @@
-import path from 'node:path';
+import fs from 'node:fs';
 import Fastify from 'fastify';
-import fastifyStatic from '@fastify/static';
 import fastifyCompress from '@fastify/compress';
 import { config } from './config.js';
 import { loadIndex, buildIndex, fetchDataVersion } from './data.js';
 import { getIcon } from './icons.js';
+import { registerStatic } from './static.js';
 import { worldsAndDcs } from './universalis.js';
 import { priceRecipe } from './recipe-price.js';
 import { loadInventory, inventoryPath } from './inventory.js';
@@ -22,7 +22,6 @@ export async function startServer() {
   const app = Fastify({ logger: false });
 
   await app.register(fastifyCompress, { threshold: 4096 });
-  await app.register(fastifyStatic, { root: path.join(config.root, 'public'), prefix: '/', cacheControl: true, maxAge: 0, etag: true });
 
   app.get('/api/meta', async () => ({
     builtAt: index.builtAt, lang: index.lang, jobs: index.jobs, books: index.books,
@@ -151,10 +150,17 @@ export async function startServer() {
 
   app.get('/icon/:id', async (req, reply) => {
     const file = await getIcon(req.params.id);
-    reply.header('Cache-Control', 'public, max-age=604800');
-    if (!file) return reply.type('image/png').send(TRANSPARENT_PNG);
-    return reply.sendFile(path.basename(file), path.dirname(file));
+    reply.header('Cache-Control', 'public, max-age=604800').type('image/png');
+    if (!file) return reply.send(TRANSPARENT_PNG);
+    try {
+      return reply.send(fs.readFileSync(file));
+    } catch {
+      return reply.send(TRANSPARENT_PNG);
+    }
   });
+
+  // The UI itself. Registered last so it only sees what the API did not claim.
+  registerStatic(app);
 
   await app.listen({ port: config.port, host: config.host });
   console.log(`[web] http://${config.host}:${config.port}`);

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
 import { marketableIds } from './universalis.js';
+import { readShipped } from './bundle.js';
 
 /**
  * Recipe and item data come from the FFXIV Teamcraft data set, which is kept
@@ -34,12 +35,25 @@ async function fetchJson(name, { log, optional = false }) {
 }
 
 /**
+ * A previously downloaded copy if there is one, else the table that ships with
+ * the app, else nothing at all.
+ */
+function readJsonFallback(cacheFile, shippedPath, empty) {
+  try { return JSON.parse(fs.readFileSync(cacheFile, 'utf8')); } catch { /* fall through */ }
+  const shipped = readShipped(shippedPath);
+  if (shipped) {
+    try { return JSON.parse(shipped); } catch { /* fall through */ }
+  }
+  return empty;
+}
+
+/**
  * Seals paid per item level for GC expert deliveries, from the game's
  * GCSupplyDutyReward sheet via XIVAPI. A copy ships in assets/gc-seals.json so a
  * rebuild still works when XIVAPI is down.
  */
 async function fetchGcSeals({ log }) {
-  const fallback = path.join(config.root, 'assets', 'gc-seals.json');
+  const cacheFile = path.join(config.dataDir, 'gc-seals.json');
   try {
     const table = {};
     for (const after of [null, 499]) {
@@ -51,11 +65,12 @@ async function fetchGcSeals({ log }) {
       }
     }
     if (!Object.keys(table).length) throw new Error('empty sheet');
-    fs.writeFileSync(fallback, JSON.stringify(table));
+    fs.mkdirSync(config.dataDir, { recursive: true });
+    fs.writeFileSync(cacheFile, JSON.stringify(table));
     return table;
   } catch (err) {
-    log(`[data] GC seal table unavailable from XIVAPI (${err.message}); using the shipped copy.`);
-    try { return JSON.parse(fs.readFileSync(fallback, 'utf8')); } catch { return {}; }
+    log(`[data] GC seal table unavailable from XIVAPI (${err.message}); using the last good copy.`);
+    return readJsonFallback(cacheFile, 'assets/gc-seals.json', {});
   }
 }
 
@@ -65,7 +80,7 @@ async function fetchGcSeals({ log }) {
  * is kept in assets/master-books.json for offline rebuilds.
  */
 async function fetchMasterBooks({ log }) {
-  const fallback = path.join(config.root, 'assets', 'master-books.json');
+  const cacheFile = path.join(config.dataDir, 'master-books.json');
   try {
     const byRecipe = {};
     const books = {};
@@ -87,11 +102,12 @@ async function fetchMasterBooks({ log }) {
     }
     if (!Object.keys(books).length) throw new Error('no books found');
     const data = { byRecipe, books };
-    fs.writeFileSync(fallback, JSON.stringify(data));
+    fs.mkdirSync(config.dataDir, { recursive: true });
+    fs.writeFileSync(cacheFile, JSON.stringify(data));
     return data;
   } catch (err) {
-    log(`[data] master book table unavailable from XIVAPI (${err.message}); using the shipped copy.`);
-    try { return JSON.parse(fs.readFileSync(fallback, 'utf8')); } catch { return { byRecipe: {}, books: {} }; }
+    log(`[data] master book table unavailable from XIVAPI (${err.message}); using the last good copy.`);
+    return readJsonFallback(cacheFile, 'assets/master-books.json', { byRecipe: {}, books: {} });
   }
 }
 

@@ -1,7 +1,17 @@
+import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { appRoot, packaged } from './bundle.js';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = appRoot();
+
+// Running from source, `npm start` passes --env-file-if-exists. The packaged
+// executable has no such flag, so it reads the .env beside itself here.
+if (packaged) {
+  const envFile = path.join(root, '.env');
+  if (fs.existsSync(envFile)) {
+    try { process.loadEnvFile(envFile); } catch { /* a malformed .env is not fatal */ }
+  }
+}
 const int = (v, d) => { const n = Number.parseInt(v ?? '', 10); return Number.isFinite(n) ? n : d; };
 
 export const config = {
@@ -16,4 +26,5 @@ export const config = {
   iconHost: 'https://v2.xivapi.com',
   teamcraftBase: 'https://raw.githubusercontent.com/ffxiv-teamcraft/ffxiv-teamcraft/staging/libs/data/src/lib/json',
   userAgent: 'CraftingMaterialsChecker/1.0 (personal crafting cost tool)',
+  packaged,
 };

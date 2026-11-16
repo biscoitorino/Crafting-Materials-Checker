@@ -78,7 +78,17 @@ listings at 2,000 / 2,005 / 50,000 and a 40,000 median, it buys both cheap ones 
 40,000. It never plans more units than the market moved last week, and it shows how stale each
 board snapshot is, because a cheap listing from six hours ago is probably already gone.
 
-## Quick start
+## Download
+
+**[Download for Windows](https://github.com/biscoitorino/Crafting-Materials-Checker/releases/latest)** —
+one `.exe`, no install, no Node needed. Unzip it somewhere it can write (your Documents
+folder, not Program Files), double-click, and open <http://127.0.0.1:8790>.
+
+It writes a `data` folder next to itself for the game data and item icons, and nothing else.
+Windows SmartScreen will warn about an unsigned program the first time: **More info → Run
+anyway**.
+
+## Run from source
 
 Needs [Node.js 22+](https://nodejs.org). No build step, no database, nothing to compile.
 
@@ -97,6 +107,17 @@ recipes, items, icons, vendors, master books and seal values. That takes a minut
 
 `.env` holds the port, the item language (`en`, `de`, `fr`, `ja`) and the world shown on first
 load. Everything else is remembered in the browser.
+
+### Building the Windows executable
+
+```bash
+npm run build
+```
+
+Bundles the app, embeds the UI and lookup tables as assets, and injects the result into a copy
+of the Node runtime as a [single-executable application](https://nodejs.org/api/single-executable-applications.html).
+Output lands in `dist/`: the `.exe` and a zip ready to attach to a release. Windows only, since
+it packages a Windows runtime.
 
 ### Windows desktop shortcut and tray icon
 
@@ -153,8 +174,10 @@ src/
   inventory.js     Allagan Tools CSV import
   universalis.js   Universalis client
   icons.js         on-disk icon cache
+  static.js        serves the UI, from disk or from inside the packaged exe
+  bundle.js        tells the two apart and finds the shipped files
 public/            the UI — plain HTML, CSS and JavaScript, no framework
-scripts/           Windows tray launcher and shortcut installer
+scripts/           Windows tray launcher, shortcut installer, release build
 ```
 
 ## Contributing
