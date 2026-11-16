@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crafting Materials Checker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Crafting Materials Checker <span>· FFXIV</span></h1>
+  <div class="seg views" id="views">
+    <button data-view="recipes" class="on">Recipes</button><button data-view="finder">Profit finder</button><button data-view="flip">Flipping</button>
+  </div>
+  <div class="controls">
+    <label>Market
+      <select id="world"></select>
+    </label>
+    <label title="How many finished items you want. Converted to crafts using the recipe's yield.">Make
+      <input id="units" type="number" min="1" max="9999" value="1">
+      <span class="unit">units</span>
+    </label>
+    <label class="chk" title="Leave shards, crystals and clusters out of the total"><input id="noCrystals" type="checkbox"> ignore crystals</label>
+    <div class="seg" id="quality">
+      <button data-q="any" class="on">Any</button><button data-q="nq">NQ</button><button data-q="hq">HQ</button>
+    </div>
+  </div>
+  <div class="status" id="status"><span class="dot"></span><span id="statusText">loading…</span>
+    <button id="dataCheck" class="tiny" title="Check whether Teamcraft has published newer game data (recipes, items, vendors). Downloads only if it has.">check updates</button>
+    <span id="dataText"></span>
+  </div>
+</header>
+
+<main id="recipesView">
+  <aside>
+    <input id="search" type="search" placeholder="Search recipes… (e.g. gazelleskin)" autocomplete="off">
+    <div class="chips" id="jobs"></div>
+    <div class="chips" id="rarity"></div>
+    <div class="range">
+      <label>Lv <input id="lvMin" type="number" min="1" max="100" placeholder="1"></label>
+      <span>–</span>
+      <label><input id="lvMax" type="number" min="1" max="100" placeholder="100"></label>
+      <label class="chk"><input id="expert" type="checkbox"> expert</label>
+    </div>
+    <div class="count" id="count"></div>
+    <ul class="list" id="list"></ul>
+    <button id="more" class="more" hidden>Show more</button>
+  </aside>
+
+  <section id="detail" class="detail">
+    <div class="empty">
+      <p>Pick a recipe on the left.</p>
+      <p class="hint">Materials are priced on Universalis with the real board rule in mind: a listing is bought whole, so ten Iron Ingots at 400 each beat a stack of 99 at 200 when you only need ten.</p>
+    </div>
+  </section>
+</main>
+<main id="finderView" hidden>
+  <aside class="profile">
+    <h3>My crafters</h3>
+    <p class="hint">Level of each class. Leave at 0 for classes you do not craft with.</p>
+    <div class="levels" id="levels"></div>
+    <h3>Master books</h3>
+    <p class="hint">Tick the tomes you own. Recipes that need a book you lack are skipped.</p>
+    <div id="books" class="books"></div>
+    <h3>Inventory</h3>
+    <label class="chk" style="font-size:12px"><input id="useInv" type="checkbox"> use my inventory</label>
+    <div class="hint" id="invStatus">checking…</div>
+    <h3>Scan options</h3>
+    <div class="opts">
+      <label>Mode
+        <select id="mode">
+          <option value="buy">Craft to sell (buy what I lack)</option>
+          <option value="own">Craft from what I own</option>
+          <option value="sell">Sell what I own as-is</option>
+        </select>
+      </label>
+      <label id="scanUnitsRow" title="How many finished units you want to make. Costs use the whole batch, so stacks and owned materials count properly.">Make units <input id="scanUnits" type="number" min="1" max="999" value="1"></label>
+      <label>Min sold / week <input id="minSold" type="number" min="0" value="5"></label>
+      <label>Sell as
+        <select id="sellAs"><option value="nq">NQ</option><option value="hq">HQ</option></select>
+      </label>
+      <label>Rank by
+        <select id="sortBy">
+          <option value="profit">Profit per unit</option>
+          <option value="batch">Total profit for the batch</option>
+          <option value="weekly">Weekly potential (profit x sold/week)</option>
+          <option value="margin">Margin %</option>
+        </select>
+      </label>
+      <label class="chk"><input id="scanExpert" type="checkbox"> include expert recipes</label>
+    </div>
+    <button id="scan" class="more primary">Scan market</button>
+    <div class="count" id="scanStatus"></div>
+  </aside>
+  <section class="detail" id="finderResults">
+    <div class="empty">
+      <p>Set your levels and books, then scan.</p>
+      <p class="hint">The scan asks Universalis for average sale prices and sale speed of every recipe you can make, 100 items per request, then prices the materials of the ones that actually sell. Results are cached for ten minutes. Click a row for the exact stack-by-stack cost.</p>
+    </div>
+  </section>
+</main>
+<main id="flipView" hidden>
+  <aside class="profile">
+    <h3>Flipping</h3>
+    <p class="hint">Buy listings that sit well under what an item really sells for, relist at market value. Uses the market selected above.</p>
+    <div class="opts">
+      <label>Budget (gil) <input id="flipBudget" type="number" min="1000" step="1000" value="100000"></label>
+      <label>Min sold / week <input id="flipMinSold" type="number" min="1" value="5"></label>
+      <label>Look at
+        <select id="flipScope">
+          <option value="all">Everything the app knows</option>
+          <option value="crafted">Crafted items only</option>
+          <option value="materials">Materials only</option>
+        </select>
+      </label>
+    </div>
+    <button id="flipScan" class="more primary">Find flips</button>
+    <div class="count" id="flipStatus"></div>
+    <p class="hint">Resale is the week's median sale price, and never above the cheapest listing you would leave behind, since that becomes your competition. Never more than a week of demand per item. Ignores anything under 8% return.</p>
+  </aside>
+  <section class="detail" id="flipResults">
+    <div class="empty">
+      <p>Set a budget and find flips.</p>
+      <p class="hint">One pass over Universalis' aggregated stats (100 items a request), then the best 60 candidates are checked against live listings and the week's sale history. Takes a minute or two the first time; results are cached for ten minutes.</p>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
